@@ -6,7 +6,6 @@ import XPathAnalyzer from 'xpath-analyzer';
 import validUrl from 'valid-url';
 import _ from 'lodash';
 
-import config, {defaultValues} from './config';
 import api from './api';
 
 
@@ -14,7 +13,7 @@ export default class Scraper extends React.PureComponent {
 	constructor(props) {
 		super(props);
 		
-		this.config = config.elements.reduce((acc, configItem) => {
+		this.config = this.props.config.elements.reduce((acc, configItem) => {
 			acc[configItem.id] = {
 				type: configItem.type,
 				mandatory: configItem.mandatory
@@ -22,13 +21,13 @@ export default class Scraper extends React.PureComponent {
 			return acc;
 		}, {});
 		
-		this.ids = config.elements.reduce((acc, configItem) => {
+		this.ids = this.props.config.elements.reduce((acc, configItem) => {
 			acc.push(configItem.id);
 			return acc;
 		}, []);
 				
 		this.state = {
-			values: defaultValues,
+			values: this.props.defaultValues,
 			errors: {},
 			categories: {},
 			categoriesError: null
@@ -59,7 +58,7 @@ export default class Scraper extends React.PureComponent {
 	elements() {
 		let elements = [];
 		
-		config.elements.forEach((item) => {
+		this.props.config.elements.forEach((item) => {
 			elements.push(this.element(item));
 		});
 		
@@ -112,7 +111,7 @@ export default class Scraper extends React.PureComponent {
 			errors
 		}, () => {
 			if (_.size(this.state.errors) === 0) {
-				this.api.get('/categories/list', this.state.values, this.showCategories, this.failCategories);
+				this.api.get(this.props.config.url, this.state.values, this.showCategories, this.failCategories);
 			}
 		});
 	}
