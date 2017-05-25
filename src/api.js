@@ -1,6 +1,6 @@
 import $ from 'jquery';
 
-const BASE_URL = 'http://10.1.0.122:9393';
+const BASE_URL = 'http://10.1.0.83:9393';
 
 export default class api {
 	
