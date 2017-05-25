@@ -6,7 +6,9 @@ import XPathAnalyzer from 'xpath-analyzer';
 import validUrl from 'valid-url';
 import _ from 'lodash';
 
-import config from './config';
+import config, {defaultValues} from './config';
+import api from './api';
+
 
 export default class Scraper extends React.PureComponent {
 	constructor(props) {
@@ -24,27 +26,33 @@ export default class Scraper extends React.PureComponent {
 			acc.push(configItem.id);
 			return acc;
 		}, []);
-		
-		let values = {};
-		this.ids.forEach((id) => {
-			values[id] = '';
-		});
-		
+				
 		this.state = {
-			values: values,
-			errors: {}
+			values: defaultValues,
+			errors: {},
+			categories: {},
+			categoriesError: null
 		};
+		
+		this.api = new api();
 		
 		this.handleChange = this.handleChange.bind(this);
 		this.handleSubmit = this.handleSubmit.bind(this);
+		this.showCategories = this.showCategories.bind(this);
+		this.failCategories = this.failCategories.bind(this);
 	}
  
 	render() {
 		return(
-			<form onSubmit={this.handleSubmit}>
-				{this.elements()}
-				<input type="submit" value="Submit" />
-			</form>
+			<div>
+				<form onSubmit={this.handleSubmit}>
+					{this.elements()}
+					<input type="submit" value="Submit" />
+				</form>
+				<div className='categories'>
+					{this.categories()}
+				</div>
+			</div>
 		);
 	}
 	
@@ -64,7 +72,7 @@ export default class Scraper extends React.PureComponent {
 		return (
 			<div key={item.id}>
 				<label>
-					{item.name}
+					{item.name + ' (' + this.config[item.id].type + ')'}
 					<input type="text" id={item.id} name={item.name} value={this.state.values[item.id] || ''} onChange={this.handleChange} className={!error ? 'validInput' : 'invalidInput'} />
 				</label>
 				{error ?
@@ -73,6 +81,14 @@ export default class Scraper extends React.PureComponent {
 				</div>) : null}
 			</div>
 		);
+	}
+
+	categories() {
+		return this.state.categoriesError ?
+				(<div className='error'>
+					{this.state.categoriesError.message}
+				</div>) : 
+			(<pre>{JSON.stringify(this.state.categories, undefined, 4)}</pre>);
 	}
 	
 	handleChange(event) {
@@ -87,18 +103,29 @@ export default class Scraper extends React.PureComponent {
 	}
 	
 	handleSubmit(event) {
+		event.preventDefault();
+		event.stopPropagation();
+		
 		const errors = this.validate();
-		if (_.size(errors) > 0) {
-			event.preventDefault();
-			event.stopPropagation();
-		}
+
 		this.setState({
 			errors
 		}, () => {
 			if (_.size(this.state.errors) === 0) {
-				// TODO
-				console.log('----------- SUCCESS');
-			} 
+				this.api.get('/categories/list', this.state.values, this.showCategories, this.failCategories);
+			}
+		});
+	}
+
+	showCategories(categories) {
+		this.setState({
+			categories: categories
+		});
+	}
+
+	failCategories(jqXHR, textStatus, errorThrown) {
+		this.setState({
+			categoriesError: errorThrown
 		});
 	}
 
