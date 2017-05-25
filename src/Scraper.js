@@ -44,6 +44,7 @@ export default class Scraper extends React.PureComponent {
 	render() {
 		return(
 			<div>
+				<h1>{this.props.config.title}</h1>
 				<form onSubmit={this.handleSubmit}>
 					{this.elements()}
 					<input type="submit" value="Submit" />

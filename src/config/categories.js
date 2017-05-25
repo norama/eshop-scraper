@@ -1,5 +1,6 @@
 export const configCategories = {
 	url: '/categories/list',
+	title: 'Categories',
 	elements: [
 		{ id: 'base_page', type: 'url', name: 'Base Page', mandatory: true },
 		{ id: 'category_page', type: 'url', name: 'Category Page', mandatory: true },
